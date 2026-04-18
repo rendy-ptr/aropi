@@ -1,0 +1,7 @@
+{
+  "name": "@aropi/types",
+  "main": "./index.ts",
+  "scripts": {
+    "lint": "tsc --noEmit"
+  }
+}
