@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rendy-ptr/aropi/backend/internal/domain"
+	"github.com/rendy-ptr/aropi/backend/internal/dto"
 )
 
 type UserHandler struct {
@@ -16,19 +17,22 @@ func NewUserHandler(s domain.UserService) *UserHandler {
 }
 
 func (h *UserHandler) Login(c *fiber.Ctx) error {
-	var body struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
+	var body dto.LoginRequest
 
 	error := c.BodyParser(&body)
 	if error != nil {
-		return c.Status(400).JSON(fiber.Map{"message": "invalid body"})
+		return c.Status(400).JSON(dto.ErrorResponse{
+			Success: false,
+			Message: "Invalid body",
+		})
 	}
 
 	token, err := h.service.Login(c.Context(), body.Email, body.Password)
 	if err != nil {
-		return c.Status(401).JSON(fiber.Map{"message": err.Error()})
+		return c.Status(401).JSON(dto.ErrorResponse{
+			Success: false,
+			Message: err.Error(),
+		})
 	}
 
 	c.Cookie(&fiber.Cookie{
@@ -40,26 +44,36 @@ func (h *UserHandler) Login(c *fiber.Ctx) error {
 		SameSite: "Lax",
 	})
 
-	return c.Status(200).JSON(fiber.Map{"message": "login success"})
+	return c.Status(200).JSON(dto.SuccessResponse{
+		Success: true,
+		Message: "Login success",
+		Data:    nil,
+	})
 }
 
 func (h *UserHandler) Register(c *fiber.Ctx) error {
-	var body struct {
-		Name     string `json:"name"`
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
+	var body dto.CreateUserRequest
 	error := c.BodyParser(&body)
 	if error != nil {
-		return c.Status(400).JSON(fiber.Map{"message": "invalid body"})
+		return c.Status(400).JSON(dto.ErrorResponse{
+			Success: false,
+			Message: "Invalid body" + error.Error(),
+		})
 	}
 
 	user, err := h.service.Register(c.Context(), body.Name, body.Email, body.Password)
 	if err != nil {
-		return c.Status(400).JSON(fiber.Map{"message": err.Error()})
+		return c.Status(400).JSON(dto.ErrorResponse{
+			Success: false,
+			Message: err.Error(),
+		})
 	}
 
-	return c.Status(200).JSON(fiber.Map{"message": "register success", "user": user})
+	return c.Status(200).JSON(dto.SuccessResponse{
+		Success: true,
+		Message: "Register success",
+		Data:    user,
+	})
 }
 
 func (h *UserHandler) Logout(c *fiber.Ctx) error {
@@ -69,5 +83,9 @@ func (h *UserHandler) Logout(c *fiber.Ctx) error {
 		Expires:  time.Now().Add(-1 * time.Hour),
 		HTTPOnly: true,
 	})
-	return c.Status(200).JSON(fiber.Map{"message": "logout success"})
+	return c.Status(200).JSON(dto.SuccessResponse{
+		Success: true,
+		Message: "Logout success",
+		Data:    nil,
+	})
 }

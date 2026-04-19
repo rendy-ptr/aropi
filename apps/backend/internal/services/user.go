@@ -2,7 +2,8 @@ package service
 
 import (
 	"context"
-	"fmt"
+	"errors"
+	"log/slog"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -23,12 +24,14 @@ func NewUserService(repo domain.UserRepository, jwtSecret string) domain.UserSer
 func (s *userService) Login(ctx context.Context, email string, password string) (string, error) {
 	user, err := s.repo.GetByEmail(ctx, email)
 	if err != nil {
-		return "", fmt.Errorf("email not registered")
+		slog.Error("userService.Login: user not found", "email", email, "error", err)
+		return "", errors.New("invalid email or password")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
-		return "", fmt.Errorf("invalid email or password")
+		slog.Error("userService.Login: password mismatch", "email", email, "error", err)
+		return "", errors.New("invalid email or password")
 	}
 
 	claims := middleware.Claims{
@@ -43,7 +46,8 @@ func (s *userService) Login(ctx context.Context, email string, password string) 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenStr, err := token.SignedString([]byte(s.jwtSecret))
 	if err != nil {
-		return "", err
+		slog.Error("userService.Login: failed to sign token", "email", email, "error", err)
+		return "", errors.New("failed to generate token")
 	}
 
 	return tokenStr, nil
@@ -54,9 +58,20 @@ func (s *userService) Logout(ctx context.Context) error {
 }
 
 func (s *userService) Register(ctx context.Context, name string, email string, password string) (*domain.User, error) {
+	if name == "" {
+		return nil, errors.New("name is required")
+	}
+	if email == "" {
+		return nil, errors.New("email is required")
+	}
+	if password == "" {
+		return nil, errors.New("password is required")
+	}
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return nil, err
+		slog.Error("userService.Register: failed to hash password", "email", email, "error", err)
+		return nil, errors.New("failed to process registration")
 	}
 
 	user, err := s.repo.Register(ctx, name, email, string(hashedPassword))

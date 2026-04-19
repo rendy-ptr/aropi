@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"fmt"
+	"log/slog"
 
 	"github.com/rendy-ptr/aropi/backend/internal/db"
 	"github.com/rendy-ptr/aropi/backend/internal/domain"
@@ -19,7 +19,8 @@ func NewUserRepository(q *db.Queries) domain.UserRepository {
 func (r *userRepository) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
 	row, err := r.queries.GetUserByEmail(ctx, email)
 	if err != nil {
-		return nil, fmt.Errorf("user not found: %w", err)
+		slog.Error("userRepository.GetByEmail", "email", email, "error", err)
+		return nil, err
 	}
 
 	return &domain.User{
@@ -40,6 +41,7 @@ func (r *userRepository) Register(ctx context.Context, name string, email string
 	}
 	row, err := r.queries.CreateUser(ctx, params)
 	if err != nil {
+		slog.Error("userRepository.Register", "email", email, "error", err)
 		return nil, err
 	}
 
