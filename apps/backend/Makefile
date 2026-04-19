@@ -4,6 +4,9 @@ export
 DB_URL=$(DATABASE_URL)
 MIGRATION_PATH=internal/db/migration
 
+dev:
+	air
+
 run:
 	go run ./cmd/main.go
 

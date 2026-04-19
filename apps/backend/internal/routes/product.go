@@ -28,4 +28,9 @@ func registerProductRoutes(public fiber.Router, protected fiber.Router, c *conta
 		middleware.RoleRequired("admin", "kasir"),
 		c.Product.GetAll,
 	)
+
+	protectedProduct.Get("/:id",
+		middleware.RoleRequired("admin"),
+		c.Product.GetByID,
+	)
 }

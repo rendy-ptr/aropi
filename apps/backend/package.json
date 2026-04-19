@@ -1,7 +1,7 @@
 {
   "name": "@aropi/backend",
   "scripts": {
-    "dev": "go run ./cmd/main.go",
+    "dev": "air",
     "build": "CGO_ENABLED=0 GOOS=linux go build -o aropi-api ./cmd/main.go",
     "lint": "golangci-lint run"
   }

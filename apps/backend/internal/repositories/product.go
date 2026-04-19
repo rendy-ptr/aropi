@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"fmt"
+	"log/slog"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/rendy-ptr/aropi/backend/internal/db"
@@ -20,6 +20,7 @@ func NewProductRepository(q *db.Queries) domain.ProductRepository {
 func (r *productRepository) FindAll(ctx context.Context) ([]domain.Product, error) {
 	rows, err := r.queries.ListProducts(ctx)
 	if err != nil {
+		slog.Error("productRepository.FindAll", "error", err)
 		return nil, err
 	}
 	var products []domain.Product
@@ -39,11 +40,13 @@ func (r *productRepository) FindByID(ctx context.Context, id string) (*domain.Pr
 	var uuid pgtype.UUID
 	err := uuid.Scan(id)
 	if err != nil {
-		return nil, fmt.Errorf("invalid uuid: %w", err)
+		slog.Error("productRepository.FindByID: invalid uuid", "id", id, "error", err)
+		return nil, err
 	}
 
 	row, err := r.queries.GetProductById(ctx, uuid)
 	if err != nil {
+		slog.Error("productRepository.FindByID", "id", id, "error", err)
 		return nil, err
 	}
 	return &domain.Product{
@@ -67,6 +70,7 @@ func (r *productRepository) Create(ctx context.Context, p domain.Product) (*doma
 	}
 	row, err := r.queries.CreateProduct(ctx, params)
 	if err != nil {
+		slog.Error("productRepository.Create", "name", p.Name, "error", err)
 		return nil, err
 	}
 	return &domain.Product{
@@ -78,11 +82,12 @@ func (r *productRepository) Create(ctx context.Context, p domain.Product) (*doma
 	}, nil
 }
 
-func (r *productRepository) Update(ctx context.Context, p domain.Product) (*domain.Product, error) {
+func (r *productRepository) Update(ctx context.Context, p domain.Product, id string) (*domain.Product, error) {
 	var uuid pgtype.UUID
-	err := uuid.Scan(p.ID)
+	err := uuid.Scan(id)
 	if err != nil {
-		return nil, fmt.Errorf("invalid uuid: %w", err)
+		slog.Error("productRepository.Update: invalid uuid", "id", id, "error", err)
+		return nil, err
 	}
 	params := db.UpdateProductParams{
 		ID:    uuid,
@@ -96,6 +101,7 @@ func (r *productRepository) Update(ctx context.Context, p domain.Product) (*doma
 	}
 	row, err := r.queries.UpdateProduct(ctx, params)
 	if err != nil {
+		slog.Error("productRepository.Update", "id", id, "error", err)
 		return nil, err
 	}
 	return &domain.Product{
@@ -111,8 +117,13 @@ func (r *productRepository) Delete(ctx context.Context, id string) error {
 	var uuid pgtype.UUID
 	err := uuid.Scan(id)
 	if err != nil {
-		return fmt.Errorf("invalid uuid: %w", err)
+		slog.Error("productRepository.Delete: invalid uuid", "id", id, "error", err)
+		return err
 	}
 	_, err = r.queries.DeleteProduct(ctx, uuid)
-	return err
+	if err != nil {
+		slog.Error("productRepository.Delete", "id", id, "error", err)
+		return err
+	}
+	return nil
 }

@@ -70,13 +70,13 @@ func RoleRequired(roles ...string) fiber.Handler {
 		userRole, ok := c.Locals("role").(string)
 		if !ok || userRole == "" {
 			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-				"error": "forbidden: role not found",
+				"error": "Role not found",
 			})
 		}
 
 		if !slices.Contains(roles, userRole) {
 			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-				"error": "forbidden: insufficient role",
+				"error": "Insufficient role",
 			})
 		}
 
