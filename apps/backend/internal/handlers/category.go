@@ -7,16 +7,16 @@ import (
 	"github.com/rendy-ptr/aropi/backend/internal/dto"
 )
 
-type ProductHandler struct {
-	service domain.ProductService
+type CategoryHandler struct {
+	service domain.CategoryService
 }
 
-func NewProductHandler(s domain.ProductService) *ProductHandler {
-	return &ProductHandler{service: s}
+func NewCategoryHandler(s domain.CategoryService) *CategoryHandler {
+	return &CategoryHandler{service: s}
 }
 
-func (h *ProductHandler) GetAll(c fiber.Ctx) error {
-	products, err := h.service.GetAll(c.Context())
+func (h *CategoryHandler) GetAll(c fiber.Ctx) error {
+	categories, err := h.service.GetAll(c.Context())
 	if err != nil {
 		return c.Status(500).JSON(dto.Response{
 			Success: false,
@@ -24,22 +24,22 @@ func (h *ProductHandler) GetAll(c fiber.Ctx) error {
 		})
 	}
 
-	if products == nil {
+	if categories == nil {
 		return c.Status(200).JSON(dto.Response{
 			Success: true,
-			Message: "No products found",
-			Data:    []domain.Product{},
+			Message: "No categories found",
+			Data:    []domain.Category{},
 		})
 	}
 	return c.Status(200).JSON(dto.Response{
 		Success: true,
-		Message: "Products retrieved successfully",
-		Data:    products,
+		Message: "Categories retrieved successfully",
+		Data:    categories,
 	})
 }
 
-func (h *ProductHandler) GetByID(c fiber.Ctx) error {
-	product, err := h.service.GetByID(c.Context(), c.Params("id"))
+func (h *CategoryHandler) GetByID(c fiber.Ctx) error {
+	category, err := h.service.GetByID(c.Context(), c.Params("id"))
 	if err != nil {
 		return c.Status(500).JSON(dto.Response{
 			Success: false,
@@ -48,13 +48,13 @@ func (h *ProductHandler) GetByID(c fiber.Ctx) error {
 	}
 	return c.Status(200).JSON(dto.Response{
 		Success: true,
-		Message: "Product retrieved successfully",
-		Data:    product,
+		Message: "Category retrieved successfully",
+		Data:    category,
 	})
 }
 
-func (h *ProductHandler) Create(c fiber.Ctx) error {
-	bodyRequest := new(dto.CreateProductRequest)
+func (h *CategoryHandler) Create(c fiber.Ctx) error {
+	bodyRequest := new(dto.CreateCategoryRequest)
 	err := c.Bind().Body(bodyRequest)
 	if err != nil {
 		validationErrors, ok := err.(validator.ValidationErrors)
@@ -78,13 +78,10 @@ func (h *ProductHandler) Create(c fiber.Ctx) error {
 			Error:   err.Error(),
 		})
 	}
-
-	product, err := h.service.Create(c.Context(), domain.Product{
-		Name:       bodyRequest.Name,
-		Price:      bodyRequest.Price,
-		Stock:      bodyRequest.Stock,
-		CategoryID: bodyRequest.Category,
+	category, err := h.service.Create(c.Context(), domain.Category{
+		Name: bodyRequest.Name,
 	})
+
 	if err != nil {
 		return c.Status(422).JSON(dto.Response{
 			Success: false,
@@ -93,13 +90,13 @@ func (h *ProductHandler) Create(c fiber.Ctx) error {
 	}
 	return c.Status(201).JSON(dto.Response{
 		Success: true,
-		Message: "Product created successfully",
-		Data:    product,
+		Message: "Category created successfully",
+		Data:    category,
 	})
 }
 
-func (h *ProductHandler) Update(c fiber.Ctx) error {
-	bodyRequest := new(dto.UpdateProductRequest)
+func (h *CategoryHandler) Update(c fiber.Ctx) error {
+	bodyRequest := new(dto.UpdateCategoryRequest)
 	err := c.Bind().Body(bodyRequest)
 	if err != nil {
 		validationErrors, ok := err.(validator.ValidationErrors)
@@ -123,13 +120,9 @@ func (h *ProductHandler) Update(c fiber.Ctx) error {
 			Error:   err.Error(),
 		})
 	}
-
-	product, err := h.service.Update(c.Context(), domain.Product{
-		Name:       bodyRequest.Name,
-		Price:      bodyRequest.Price,
-		Stock:      bodyRequest.Stock,
-		CategoryID: bodyRequest.Category,
-	}, c.Params("id"))
+	category, err := h.service.Update(c.Context(), c.Params("id"), domain.Category{
+		Name: bodyRequest.Name,
+	})
 	if err != nil {
 		return c.Status(422).JSON(dto.Response{
 			Success: false,
@@ -138,12 +131,12 @@ func (h *ProductHandler) Update(c fiber.Ctx) error {
 	}
 	return c.Status(200).JSON(dto.Response{
 		Success: true,
-		Message: "Product updated successfully",
-		Data:    product,
+		Message: "Category updated successfully",
+		Data:    category,
 	})
 }
 
-func (h *ProductHandler) Delete(c fiber.Ctx) error {
+func (h *CategoryHandler) Delete(c fiber.Ctx) error {
 	err := h.service.Delete(c.Context(), c.Params("id"))
 	if err != nil {
 		return c.Status(500).JSON(dto.Response{
@@ -153,6 +146,6 @@ func (h *ProductHandler) Delete(c fiber.Ctx) error {
 	}
 	return c.Status(200).JSON(dto.Response{
 		Success: true,
-		Message: "Product deleted successfully",
+		Message: "Category deleted successfully",
 	})
 }

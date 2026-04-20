@@ -17,6 +17,7 @@ func Register(app *fiber.App, c *container.Container, cfg *config.Config) {
 	// registerAuthRoutes(api, c, cfg)
 	registerUserRoutes(public, protected, c, cfg)
 	registerProductRoutes(public, protected, c, cfg)
+	registerCategoryRoutes(public, protected, c, cfg)
 	// registerOrderRoutes(api, c, cfg)
 	// registerMemberRoutes(api, c, cfg)
 	// registerInventoryRoutes(api, c, cfg)
