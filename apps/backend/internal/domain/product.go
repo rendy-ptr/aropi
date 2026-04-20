@@ -5,11 +5,12 @@ import (
 )
 
 type Product struct {
-	ID         string `json:"id"`
-	Name       string `json:"name"`
-	Price      int64  `json:"price"`
-	Stock      int    `json:"stock"`
-	CategoryID string `json:"category_id"`
+	ID               string `json:"id"`
+	ProductImageFile string `json:"product_image_file"`
+	Name             string `json:"name"`
+	Price            int64  `json:"price"`
+	Stock            int    `json:"stock"`
+	CategoryID       string `json:"category_id"`
 }
 
 type ProductRepository interface {

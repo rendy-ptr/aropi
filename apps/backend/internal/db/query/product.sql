@@ -7,24 +7,26 @@ SELECT * FROM products WHERE id = $1 LIMIT 1;
 -- name: CreateProduct :one
 INSERT INTO
     products (
+        product_image_file,
         name,
         price,
         stock,
         category_id
     )
-VALUES ($1, $2, $3, $4)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING
     *;
 
 -- name: UpdateProduct :one
 UPDATE products
 SET
-    name = $1,
-    price = $2,
-    stock = $3,
-    category_id = $4
+    product_image_file = COALESCE($1, product_image_file),
+    name = COALESCE($2, name),
+    price = COALESCE($3, price),
+    stock = COALESCE($4, stock),
+    category_id = COALESCE($5, category_id)
 WHERE
-    id = $5
+    id = $6
 RETURNING
     *;
 
