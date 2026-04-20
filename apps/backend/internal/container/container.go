@@ -13,8 +13,9 @@ import (
 )
 
 type Container struct {
-	User    *handler.UserHandler
-	Product *handler.ProductHandler
+	User     *handler.UserHandler
+	Product  *handler.ProductHandler
+	Category *handler.CategoryHandler
 	// Order     *handler.OrderHandler
 	// Member    *handler.MemberHandler
 	// Inventory *handler.InventoryHandler
@@ -32,6 +33,10 @@ func New(cfg *config.Config) *Container {
 	userRepo := repository.NewUserRepository(queries)
 	userSvc := service.NewUserService(userRepo, cfg.JWTSecret)
 	userHdlr := handler.NewUserHandler(userSvc)
+
+	categoryRepo := repository.NewCategoryRepository(queries)
+	categorySvc := service.NewCategoryService(categoryRepo)
+	categoryHdlr := handler.NewCategoryHandler(categorySvc)
 
 	productRepo := repository.NewProductRepository(queries)
 	productSvc := service.NewProductService(productRepo)
@@ -53,8 +58,9 @@ func New(cfg *config.Config) *Container {
 	// reportHdlr := handler.NewReportHandler(reportSvc)
 
 	return &Container{
-		User:    userHdlr,
-		Product: productHdlr,
+		User:     userHdlr,
+		Product:  productHdlr,
+		Category: categoryHdlr,
 		// Order:     orderHdlr,
 		// Member:    memberHdlr,
 		// Inventory: inventoryHdlr,

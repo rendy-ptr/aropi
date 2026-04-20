@@ -12,16 +12,23 @@ import (
 )
 
 const createProduct = `-- name: CreateProduct :one
-INSERT INTO products (name, price, stock, category)
+INSERT INTO
+    products (
+        name,
+        price,
+        stock,
+        category_id
+    )
 VALUES ($1, $2, $3, $4)
-RETURNING id, name, price, stock, category, created_at
+RETURNING
+    id, name, price, stock, category_id, created_at, updated_at
 `
 
 type CreateProductParams struct {
-	Name     string
-	Price    int64
-	Stock    int32
-	Category pgtype.Text
+	Name       string
+	Price      int64
+	Stock      int32
+	CategoryID pgtype.UUID
 }
 
 func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error) {
@@ -29,7 +36,7 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (P
 		arg.Name,
 		arg.Price,
 		arg.Stock,
-		arg.Category,
+		arg.CategoryID,
 	)
 	var i Product
 	err := row.Scan(
@@ -37,15 +44,15 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (P
 		&i.Name,
 		&i.Price,
 		&i.Stock,
-		&i.Category,
+		&i.CategoryID,
 		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const deleteProduct = `-- name: DeleteProduct :one
-DELETE FROM products WHERE id = $1
-RETURNING id, name, price, stock, category, created_at
+DELETE FROM products WHERE id = $1 RETURNING id, name, price, stock, category_id, created_at, updated_at
 `
 
 func (q *Queries) DeleteProduct(ctx context.Context, id pgtype.UUID) (Product, error) {
@@ -56,14 +63,15 @@ func (q *Queries) DeleteProduct(ctx context.Context, id pgtype.UUID) (Product, e
 		&i.Name,
 		&i.Price,
 		&i.Stock,
-		&i.Category,
+		&i.CategoryID,
 		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const getProductById = `-- name: GetProductById :one
-SELECT id, name, price, stock, category, created_at FROM products WHERE id = $1 LIMIT 1
+SELECT id, name, price, stock, category_id, created_at, updated_at FROM products WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetProductById(ctx context.Context, id pgtype.UUID) (Product, error) {
@@ -74,14 +82,15 @@ func (q *Queries) GetProductById(ctx context.Context, id pgtype.UUID) (Product, 
 		&i.Name,
 		&i.Price,
 		&i.Stock,
-		&i.Category,
+		&i.CategoryID,
 		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const listProducts = `-- name: ListProducts :many
-SELECT id, name, price, stock, category, created_at FROM products ORDER BY created_at DESC
+SELECT id, name, price, stock, category_id, created_at, updated_at FROM products ORDER BY created_at DESC
 `
 
 func (q *Queries) ListProducts(ctx context.Context) ([]Product, error) {
@@ -98,8 +107,9 @@ func (q *Queries) ListProducts(ctx context.Context) ([]Product, error) {
 			&i.Name,
 			&i.Price,
 			&i.Stock,
-			&i.Category,
+			&i.CategoryID,
 			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -112,21 +122,24 @@ func (q *Queries) ListProducts(ctx context.Context) ([]Product, error) {
 }
 
 const updateProduct = `-- name: UpdateProduct :one
-UPDATE products SET
-name = $1,
-price = $2,
-stock = $3,
-category = $4
-WHERE id = $5
-RETURNING id, name, price, stock, category, created_at
+UPDATE products
+SET
+    name = $1,
+    price = $2,
+    stock = $3,
+    category_id = $4
+WHERE
+    id = $5
+RETURNING
+    id, name, price, stock, category_id, created_at, updated_at
 `
 
 type UpdateProductParams struct {
-	Name     string
-	Price    int64
-	Stock    int32
-	Category pgtype.Text
-	ID       pgtype.UUID
+	Name       string
+	Price      int64
+	Stock      int32
+	CategoryID pgtype.UUID
+	ID         pgtype.UUID
 }
 
 func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error) {
@@ -134,7 +147,7 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (P
 		arg.Name,
 		arg.Price,
 		arg.Stock,
-		arg.Category,
+		arg.CategoryID,
 		arg.ID,
 	)
 	var i Product
@@ -143,8 +156,9 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (P
 		&i.Name,
 		&i.Price,
 		&i.Stock,
-		&i.Category,
+		&i.CategoryID,
 		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
