@@ -4,7 +4,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -16,7 +16,7 @@ type Claims struct {
 }
 
 func AuthRequired(jwtSecret string) fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		var tokenStr string
 
 		authHeader := c.Get("Authorization")
@@ -66,7 +66,7 @@ func AuthRequired(jwtSecret string) fiber.Handler {
 }
 
 func RoleRequired(roles ...string) fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		userRole, ok := c.Locals("role").(string)
 		if !ok || userRole == "" {
 			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
