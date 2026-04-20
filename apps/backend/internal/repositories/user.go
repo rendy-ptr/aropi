@@ -32,16 +32,16 @@ func (r *userRepository) GetByEmail(ctx context.Context, email string) (*domain.
 	}, nil
 }
 
-func (r *userRepository) Register(ctx context.Context, name string, email string, password string) (*domain.User, error) {
+func (r *userRepository) Register(ctx context.Context, u domain.User) (*domain.User, error) {
 	params := db.CreateUserParams{
-		Name:     name,
-		Email:    email,
-		Password: password,
+		Name:     u.Name,
+		Email:    u.Email,
+		Password: u.Password,
 		Role:     db.UserRoleUser,
 	}
 	row, err := r.queries.CreateUser(ctx, params)
 	if err != nil {
-		slog.Error("userRepository.Register", "email", email, "error", err)
+		slog.Error("userRepository.Register", "email", u.Email, "error", err)
 		return nil, err
 	}
 

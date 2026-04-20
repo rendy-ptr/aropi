@@ -21,16 +21,16 @@ func NewUserService(repo domain.UserRepository, jwtSecret string) domain.UserSer
 	return &userService{repo: repo, jwtSecret: jwtSecret}
 }
 
-func (s *userService) Login(ctx context.Context, email string, password string) (string, error) {
-	user, err := s.repo.GetByEmail(ctx, email)
+func (s *userService) Login(ctx context.Context, u domain.User) (string, error) {
+	user, err := s.repo.GetByEmail(ctx, u.Email)
 	if err != nil {
-		slog.Error("userService.Login: user not found", "email", email, "error", err)
+		slog.Error("userService.Login: user not found", "email", u.Email, "error", err)
 		return "", errors.New("invalid email or password")
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(u.Password))
 	if err != nil {
-		slog.Error("userService.Login: password mismatch", "email", email, "error", err)
+		slog.Error("userService.Login: password mismatch", "email", u.Email, "error", err)
 		return "", errors.New("invalid email or password")
 	}
 
@@ -46,7 +46,7 @@ func (s *userService) Login(ctx context.Context, email string, password string) 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenStr, err := token.SignedString([]byte(s.jwtSecret))
 	if err != nil {
-		slog.Error("userService.Login: failed to sign token", "email", email, "error", err)
+		slog.Error("userService.Login: failed to sign token", "email", u.Email, "error", err)
 		return "", errors.New("failed to generate token")
 	}
 
@@ -57,24 +57,28 @@ func (s *userService) Logout(ctx context.Context) error {
 	return nil
 }
 
-func (s *userService) Register(ctx context.Context, name string, email string, password string) (*domain.User, error) {
-	if name == "" {
+func (s *userService) Register(ctx context.Context, u domain.User) (*domain.User, error) {
+	if u.Name == "" {
 		return nil, errors.New("name is required")
 	}
-	if email == "" {
+	if u.Email == "" {
 		return nil, errors.New("email is required")
 	}
-	if password == "" {
+	if u.Password == "" {
 		return nil, errors.New("password is required")
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
 	if err != nil {
-		slog.Error("userService.Register: failed to hash password", "email", email, "error", err)
+		slog.Error("userService.Register: failed to hash password", "email", u.Email, "error", err)
 		return nil, errors.New("failed to process registration")
 	}
 
-	user, err := s.repo.Register(ctx, name, email, string(hashedPassword))
+	user, err := s.repo.Register(ctx, domain.User{
+		Name:     u.Name,
+		Email:    u.Email,
+		Password: string(hashedPassword),
+	})
 	if err != nil {
 		return nil, err
 	}

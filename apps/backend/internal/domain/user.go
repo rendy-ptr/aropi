@@ -14,11 +14,11 @@ type User struct {
 
 type UserRepository interface {
 	GetByEmail(ctx context.Context, email string) (*User, error)
-	Register(ctx context.Context, name string, email string, password string) (*User, error)
+	Register(ctx context.Context, u User) (*User, error)
 }
 
 type UserService interface {
-	Login(ctx context.Context, email string, password string) (token string, err error)
-	Register(ctx context.Context, name string, email string, password string) (*User, error)
+	Login(ctx context.Context, u User) (token string, err error)
+	Register(ctx context.Context, u User) (*User, error)
 	Logout(ctx context.Context) error
 }

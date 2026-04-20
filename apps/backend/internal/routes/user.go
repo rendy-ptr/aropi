@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/rendy-ptr/aropi/backend/internal/config"
 	"github.com/rendy-ptr/aropi/backend/internal/container"
 	// "github.com/rendy-ptr/aropi/backend/internal/middleware"
