@@ -39,3 +39,8 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 # Build output
 dist
 build
+
+# Backend User Uploads
+apps/backend/public/uploads/*
+!apps/backend/public/uploads/.gitkeep
+
