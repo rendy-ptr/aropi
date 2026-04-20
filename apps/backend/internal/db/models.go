@@ -62,13 +62,14 @@ type Category struct {
 }
 
 type Product struct {
-	ID         pgtype.UUID
-	Name       string
-	Price      int64
-	Stock      int32
-	CategoryID pgtype.UUID
-	CreatedAt  pgtype.Timestamptz
-	UpdatedAt  pgtype.Timestamptz
+	ID               pgtype.UUID
+	ProductImageFile string
+	Name             string
+	Price            int64
+	Stock            int32
+	CategoryID       pgtype.UUID
+	CreatedAt        pgtype.Timestamptz
+	UpdatedAt        pgtype.Timestamptz
 }
 
 type User struct {

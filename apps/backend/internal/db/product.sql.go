@@ -14,25 +14,28 @@ import (
 const createProduct = `-- name: CreateProduct :one
 INSERT INTO
     products (
+        product_image_file,
         name,
         price,
         stock,
         category_id
     )
-VALUES ($1, $2, $3, $4)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING
-    id, name, price, stock, category_id, created_at, updated_at
+    id, product_image_file, name, price, stock, category_id, created_at, updated_at
 `
 
 type CreateProductParams struct {
-	Name       string
-	Price      int64
-	Stock      int32
-	CategoryID pgtype.UUID
+	ProductImageFile string
+	Name             string
+	Price            int64
+	Stock            int32
+	CategoryID       pgtype.UUID
 }
 
 func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error) {
 	row := q.db.QueryRow(ctx, createProduct,
+		arg.ProductImageFile,
 		arg.Name,
 		arg.Price,
 		arg.Stock,
@@ -41,6 +44,7 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (P
 	var i Product
 	err := row.Scan(
 		&i.ID,
+		&i.ProductImageFile,
 		&i.Name,
 		&i.Price,
 		&i.Stock,
@@ -52,7 +56,7 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (P
 }
 
 const deleteProduct = `-- name: DeleteProduct :one
-DELETE FROM products WHERE id = $1 RETURNING id, name, price, stock, category_id, created_at, updated_at
+DELETE FROM products WHERE id = $1 RETURNING id, product_image_file, name, price, stock, category_id, created_at, updated_at
 `
 
 func (q *Queries) DeleteProduct(ctx context.Context, id pgtype.UUID) (Product, error) {
@@ -60,6 +64,7 @@ func (q *Queries) DeleteProduct(ctx context.Context, id pgtype.UUID) (Product, e
 	var i Product
 	err := row.Scan(
 		&i.ID,
+		&i.ProductImageFile,
 		&i.Name,
 		&i.Price,
 		&i.Stock,
@@ -71,7 +76,7 @@ func (q *Queries) DeleteProduct(ctx context.Context, id pgtype.UUID) (Product, e
 }
 
 const getProductById = `-- name: GetProductById :one
-SELECT id, name, price, stock, category_id, created_at, updated_at FROM products WHERE id = $1 LIMIT 1
+SELECT id, product_image_file, name, price, stock, category_id, created_at, updated_at FROM products WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetProductById(ctx context.Context, id pgtype.UUID) (Product, error) {
@@ -79,6 +84,7 @@ func (q *Queries) GetProductById(ctx context.Context, id pgtype.UUID) (Product, 
 	var i Product
 	err := row.Scan(
 		&i.ID,
+		&i.ProductImageFile,
 		&i.Name,
 		&i.Price,
 		&i.Stock,
@@ -90,7 +96,7 @@ func (q *Queries) GetProductById(ctx context.Context, id pgtype.UUID) (Product, 
 }
 
 const listProducts = `-- name: ListProducts :many
-SELECT id, name, price, stock, category_id, created_at, updated_at FROM products ORDER BY created_at DESC
+SELECT id, product_image_file, name, price, stock, category_id, created_at, updated_at FROM products ORDER BY created_at DESC
 `
 
 func (q *Queries) ListProducts(ctx context.Context) ([]Product, error) {
@@ -104,6 +110,7 @@ func (q *Queries) ListProducts(ctx context.Context) ([]Product, error) {
 		var i Product
 		if err := rows.Scan(
 			&i.ID,
+			&i.ProductImageFile,
 			&i.Name,
 			&i.Price,
 			&i.Stock,
@@ -124,26 +131,29 @@ func (q *Queries) ListProducts(ctx context.Context) ([]Product, error) {
 const updateProduct = `-- name: UpdateProduct :one
 UPDATE products
 SET
-    name = $1,
-    price = $2,
-    stock = $3,
-    category_id = $4
+    product_image_file = COALESCE($1, product_image_file),
+    name = COALESCE($2, name),
+    price = COALESCE($3, price),
+    stock = COALESCE($4, stock),
+    category_id = COALESCE($5, category_id)
 WHERE
-    id = $5
+    id = $6
 RETURNING
-    id, name, price, stock, category_id, created_at, updated_at
+    id, product_image_file, name, price, stock, category_id, created_at, updated_at
 `
 
 type UpdateProductParams struct {
-	Name       string
-	Price      int64
-	Stock      int32
-	CategoryID pgtype.UUID
-	ID         pgtype.UUID
+	ProductImageFile string
+	Name             string
+	Price            int64
+	Stock            int32
+	CategoryID       pgtype.UUID
+	ID               pgtype.UUID
 }
 
 func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error) {
 	row := q.db.QueryRow(ctx, updateProduct,
+		arg.ProductImageFile,
 		arg.Name,
 		arg.Price,
 		arg.Stock,
@@ -153,6 +163,7 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (P
 	var i Product
 	err := row.Scan(
 		&i.ID,
+		&i.ProductImageFile,
 		&i.Name,
 		&i.Price,
 		&i.Stock,
