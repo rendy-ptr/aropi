@@ -59,6 +59,22 @@ func (q *Queries) GetCategoryById(ctx context.Context, id pgtype.UUID) (Category
 	return i, err
 }
 
+const getCategoryByName = `-- name: GetCategoryByName :one
+SELECT id, name, created_at, updated_at FROM categories WHERE name = $1 LIMIT 1
+`
+
+func (q *Queries) GetCategoryByName(ctx context.Context, name string) (Category, error) {
+	row := q.db.QueryRow(ctx, getCategoryByName, name)
+	var i Category
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const listCategories = `-- name: ListCategories :many
 SELECT id, name, created_at, updated_at FROM categories ORDER BY created_at DESC
 `

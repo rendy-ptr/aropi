@@ -32,3 +32,6 @@ RETURNING
 
 -- name: DeleteProduct :one
 DELETE FROM products WHERE id = $1 RETURNING *;
+
+-- name: GetProductByName :one
+SELECT * FROM products WHERE name = $1 LIMIT 1;
