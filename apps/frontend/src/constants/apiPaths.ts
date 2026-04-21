@@ -1,9 +1,9 @@
 export const API_PATHS = {
   AUTH: {
-    LOGIN: '/auth/login',
-    REGISTER: '/auth/register',
-    ME: '/auth/me',
-    LOGOUT: '/auth/logout',
+    LOGIN: '/public/users/login',
+    REGISTER: '/public/users/register',
+    ME: '/protected/users/me',
+    LOGOUT: '/public/users/logout',
   },
   ADMIN: {
     DASHBOARD: '/dashboard/admin',
@@ -27,7 +27,7 @@ export const API_PATHS = {
   },
   PUBLIC: {
     UPLOAD_IMAGE: '/upload',
-    MENU: () => '/menu',
-    KATEGORI: () => '/menu/kategori',
+    PRODUCTS: () => '/public/products',
+    CATEGORIES: () => '/public/categories',
   },
 };

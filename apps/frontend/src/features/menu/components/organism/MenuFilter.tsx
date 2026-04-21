@@ -1,7 +1,4 @@
-import * as LucideIcons from 'lucide-react';
-import type { LucideProps } from 'lucide-react';
 import { usePublicCategories } from '../../hooks/category.hook';
-import type React from 'react';
 import type { PublicCategory } from '../../types/category';
 
 interface MenuFilterProps {
@@ -36,10 +33,10 @@ const MenuFilter = ({
     );
   }
 
-  const categoriesWithAll: (
-    | PublicCategory
-    | { id: string; name: string; icon: string }
-  )[] = [{ id: 'semua', name: 'Semua Menu', icon: 'Grid3X3' }, ...categories];
+  const categoriesWithAll: PublicCategory[] = [
+    { id: 'semua', name: 'Semua Menu' },
+    ...categories,
+  ];
 
   return (
     <div className="w-full">
@@ -53,10 +50,6 @@ const MenuFilter = ({
       {/* Categories Grid */}
       <div className="mx-auto flex max-w-5xl flex-wrap justify-center gap-2 sm:gap-3">
         {categoriesWithAll.map(category => {
-          const Icon = LucideIcons[
-            category.icon as keyof typeof LucideIcons
-          ] as React.ComponentType<LucideProps>;
-
           const isActive = selectedCategory === category.id;
 
           return (
@@ -70,18 +63,6 @@ const MenuFilter = ({
               } min-w-0 flex-shrink-0`}
               aria-pressed={isActive}
             >
-              {/* Background Glow Effect */}
-              {isActive && (
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#6f4e37]/10 via-[#6f4e37]/5 to-[#6f4e37]/10 blur-xl"></div>
-              )}
-
-              {/* Icon */}
-              {Icon && (
-                <Icon
-                  className={`h-4 w-4 flex-shrink-0 transition-transform duration-300 ${isActive ? 'text-white' : 'text-[#8c7158] group-hover:text-[#6f4e37]'} ${isActive ? 'rotate-12' : 'group-hover:scale-110'}`}
-                />
-              )}
-
               {/* Text */}
               <span className="relative z-10 whitespace-nowrap">
                 {category.name}

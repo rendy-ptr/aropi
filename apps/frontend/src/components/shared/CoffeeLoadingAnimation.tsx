@@ -1,155 +1,78 @@
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Coffee } from 'lucide-react';
 
 interface CoffeeLoadingAnimationProps {
   messages?: string[];
   interval?: number;
   title?: string;
+  fullScreen?: boolean;
 }
 
 const CoffeeLoadingAnimation = ({
-  messages = [],
-  interval = 2000,
-  title = 'Loading',
+  messages = ['Menyeduh kopi...', 'Mempersiapkan aroma...', 'Hampir siap...'],
+  interval = 3000,
+  title = 'Sedang Memproses',
+  fullScreen = true,
 }: CoffeeLoadingAnimationProps) => {
-  const [loadingText, setLoadingText] = useState(messages[0]);
-  const [dots, setDots] = useState('');
+  const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    const textInterval = setInterval(() => {
-      setLoadingText(messages[Math.floor(Math.random() * messages.length)]);
-    }, interval);
-
-    const dotsInterval = setInterval(() => {
-      setDots(prev => (prev.length >= 3 ? '' : prev + '.'));
-    }, 500);
-
-    return () => {
-      clearInterval(textInterval);
-      clearInterval(dotsInterval);
-    };
-  }, [messages, interval]);
+    if (messages.length > 0) {
+      const timer = setInterval(() => {
+        setIndex(prev => (prev + 1) % messages.length);
+      }, interval);
+      return () => clearInterval(timer);
+    }
+  }, [messages.length, interval]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#f8f3e9]">
-      <div className="text-center">
-        {/* Coffee Cup Animation */}
-        <div className="relative mb-8">
-          {/* Cup */}
-          <div className="relative mx-auto h-32 w-24 rounded-b-3xl border-4 border-amber-800 bg-gradient-to-b from-amber-100 to-amber-200">
-            {/* Coffee liquid with animated fill */}
-            <div
-              className="absolute right-1 bottom-1 left-1 animate-pulse rounded-b-3xl bg-gradient-to-t from-amber-900 to-amber-700"
-              style={{
-                height: '70%',
-                animation: 'fillCoffee 3s ease-in-out infinite',
-              }}
-            ></div>
+    <div
+      className={`flex items-center justify-center ${
+        fullScreen ? 'min-h-screen bg-[#f8f3e9]' : 'py-20'
+      }`}
+    >
+      <div className="flex flex-col items-center">
+        {/* Minimalist Pulsing Icon */}
+        <motion.div
+          animate={{ opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          className="mb-8"
+        >
+          <Coffee className="h-10 w-10 text-[#6f4e37]" />
+        </motion.div>
 
-            {/* Handle */}
-            <div className="absolute top-6 -right-6 h-12 w-6 rounded-r-full border-4 border-amber-800 bg-transparent"></div>
-          </div>
-
-          {/* Saucer */}
-          <div className="mx-auto -mt-2 h-4 w-32 rounded-full border-2 border-amber-800 bg-gradient-to-b from-amber-200 to-amber-300"></div>
-
-          {/* Steam Animation */}
-          <div className="absolute -top-8 left-1/2 -translate-x-1/2 transform">
-            <div className="flex space-x-1">
-              <div
-                className="h-8 w-1 animate-bounce rounded-full bg-gradient-to-t from-gray-300 to-transparent"
-                style={{ animationDelay: '0s', animationDuration: '1.5s' }}
-              ></div>
-              <div
-                className="h-6 w-1 animate-bounce rounded-full bg-gradient-to-t from-gray-300 to-transparent"
-                style={{ animationDelay: '0.3s', animationDuration: '1.5s' }}
-              ></div>
-              <div
-                className="h-8 w-1 animate-bounce rounded-full bg-gradient-to-t from-gray-300 to-transparent"
-                style={{ animationDelay: '0.6s', animationDuration: '1.5s' }}
-              ></div>
-            </div>
-          </div>
-
-          {/* Coffee Beans Animation */}
-          <div className="absolute top-1/2 -left-12 -translate-y-1/2 transform">
-            <div
-              className="h-5 w-3 animate-spin rounded-full bg-gradient-to-br from-amber-800 to-amber-900"
-              style={{ animationDuration: '2s' }}
-            >
-              <div className="mx-auto h-5 w-0.5 rounded-full bg-amber-700"></div>
-            </div>
-          </div>
-
-          <div className="absolute top-1/3 -right-12 -translate-y-1/2 transform">
-            <div
-              className="h-5 w-3 animate-spin rounded-full bg-gradient-to-br from-amber-800 to-amber-900"
-              style={{ animationDuration: '2.5s', animationDelay: '0.5s' }}
-            >
-              <div className="mx-auto h-5 w-0.5 rounded-full bg-amber-700"></div>
-            </div>
-          </div>
-        </div>
-
-        {/* Loading Text */}
-        <div className="mb-6">
-          <h2 className="mb-2 text-2xl font-bold text-amber-900">
-            {title}: {loadingText}
-            {dots}
+        {/* Clean Typography */}
+        <div className="text-center">
+          <h2 className="mb-2 text-[10px] font-bold tracking-[0.4em] text-[#6f4e37] uppercase">
+            {title}
           </h2>
+
+          <div className="h-6">
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={index}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.8 }}
+                className="text-sm font-medium tracking-wide text-[#8c7158]"
+              >
+                {messages[index]}
+              </motion.p>
+            </AnimatePresence>
+          </div>
         </div>
 
-        {/* Progress Bar */}
-        <div className="mx-auto mb-4 h-2 w-64 overflow-hidden rounded-full bg-amber-200">
-          <div
-            className="h-full animate-pulse rounded-full bg-gradient-to-r from-amber-600 to-amber-800"
-            style={{
-              width: '70%',
-              animation: 'progressFill 2s ease-in-out infinite alternate',
-            }}
-          ></div>
+        {/* Ultra-thin Minimalist Progress Line */}
+        <div className="mt-8 h-[1px] w-32 overflow-hidden bg-[#e6d9c9]">
+          <motion.div
+            initial={{ x: '-100%' }}
+            animate={{ x: '100%' }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: 'linear' }}
+            className="h-full w-full bg-[#6f4e37]"
+          />
         </div>
-
-        {/* Coffee Drops */}
-        <div className="flex justify-center space-x-2">
-          <div
-            className="h-2 w-2 animate-bounce rounded-full bg-amber-800"
-            style={{ animationDelay: '0s' }}
-          ></div>
-          <div
-            className="h-2 w-2 animate-bounce rounded-full bg-amber-700"
-            style={{ animationDelay: '0.2s' }}
-          ></div>
-          <div
-            className="h-2 w-2 animate-bounce rounded-full bg-amber-800"
-            style={{ animationDelay: '0.4s' }}
-          ></div>
-        </div>
-
-        {/* Custom Keyframes */}
-        <style>
-          {`
-            @keyframes fillCoffee {
-              0% {
-                height: 60%;
-              }
-              50% {
-                height: 80%;
-              }
-              100% {
-                height: 60%;
-              }
-            }
-
-            @keyframes progressFill {
-              0% {
-                width: 30%;
-              }
-              100% {
-                width: 90%;
-              }
-            }
-          `}
-        </style>
       </div>
     </div>
   );

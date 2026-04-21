@@ -1,5 +1,13 @@
 -- name: ListProducts :many
-SELECT * FROM products ORDER BY created_at DESC;
+SELECT 
+    p.*, 
+    c.name as category_name
+FROM products p
+LEFT JOIN categories c ON p.category_id = c.id
+WHERE 
+    ((COALESCE(sqlc.arg('search')::text, '') = '') OR (p.name ILIKE '%' || sqlc.arg('search')::text || '%'))
+    AND (sqlc.narg('category_id')::uuid IS NULL OR p.category_id = sqlc.narg('category_id')::uuid)
+ORDER BY p.created_at DESC;
 
 -- name: GetProductById :one
 SELECT * FROM products WHERE id = $1 LIMIT 1;

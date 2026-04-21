@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { FOOTER_LINKS } from '@/constants/footerLinks';
 import Footer from '@/components/shared/Footer';
 import Navbar from '@/components/shared/Navbar';
@@ -6,24 +7,53 @@ import SearchFilterMenu from '../components/sections/Search & Filter Menu';
 import MenuGrid from '../components/sections/MenuGrid';
 import { usePublicMenus } from '../hooks/menu.hook';
 import CoffeeLoadingAnimation from '@/components/shared/CoffeeLoadingAnimation';
+import { useDebounce } from '@/hooks/useDebounce';
 
 const UserMenuUI = () => {
-  const [selectedCategory, setSelectedCategory] = useState('semua');
-  const [searchQuery, setSearchQuery] = useState('');
-  const { data: menuItems = [], isLoading, error } = usePublicMenus();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const selectedCategory = searchParams.get('category') || 'semua';
+  const searchQuery = searchParams.get('search') || '';
+
+  const setSelectedCategory = (category: string) => {
+    setSearchParams(
+      prev => {
+        if (category === 'semua' || !category) {
+          prev.delete('category');
+        } else {
+          prev.set('category', category);
+        }
+        return prev;
+      },
+      { replace: true }
+    );
+  };
+
+  const setSearchQuery = (query: string) => {
+    setSearchParams(
+      prev => {
+        if (!query) {
+          prev.delete('search');
+        } else {
+          prev.set('search', query);
+        }
+        return prev;
+      },
+      { replace: true }
+    );
+  };
+
+  const debouncedSearch = useDebounce(searchQuery, 1000);
+
+  const {
+    data: menuItems = [],
+    isLoading,
+    error,
+  } = usePublicMenus(debouncedSearch, selectedCategory);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-
-  const filteredMenuItems = menuItems.filter(item => {
-    const matchesCategory =
-      selectedCategory === 'semua' || item.categoryId === selectedCategory;
-    const matchesSearch =
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.category.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
 
   if (isLoading) {
     return (
@@ -39,7 +69,16 @@ const UserMenuUI = () => {
   }
 
   if (error) {
-    return <p className="text-center text-red-500">Gagal memuat menu</p>;
+    return (
+      <CoffeeLoadingAnimation
+        title="Gagal Memuat Menu"
+        messages={[
+          'Gagal memuat menu',
+          'Terjadi kesalahan saat mengambil data',
+          'Silahkan coba lagi',
+        ]}
+      />
+    );
   }
 
   return (
@@ -55,7 +94,7 @@ const UserMenuUI = () => {
       />
 
       {/* Menu Grid dengan card premium */}
-      <MenuGrid filteredMenuItems={filteredMenuItems} />
+      <MenuGrid filteredMenuItems={menuItems} />
 
       {/* Footer */}
       <Footer variant="light" links={FOOTER_LINKS} />

@@ -21,17 +21,17 @@ func NewUserService(repo domain.UserRepository, jwtSecret string) domain.UserSer
 	return &userService{repo: repo, jwtSecret: jwtSecret}
 }
 
-func (s *userService) Login(ctx context.Context, u domain.User) (string, error) {
+func (s *userService) Login(ctx context.Context, u domain.User) (string, *domain.User, error) {
 	user, err := s.repo.GetByEmail(ctx, u.Email)
 	if err != nil {
 		slog.Error("userService.Login: user not found", "email", u.Email, "error", err)
-		return "", errors.New("invalid email or password")
+		return "", nil, errors.New("invalid email or password")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(u.Password))
 	if err != nil {
 		slog.Error("userService.Login: password mismatch", "email", u.Email, "error", err)
-		return "", errors.New("invalid email or password")
+		return "", nil, errors.New("invalid email or password")
 	}
 
 	claims := middleware.Claims{
@@ -47,10 +47,10 @@ func (s *userService) Login(ctx context.Context, u domain.User) (string, error) 
 	tokenStr, err := token.SignedString([]byte(s.jwtSecret))
 	if err != nil {
 		slog.Error("userService.Login: failed to sign token", "email", u.Email, "error", err)
-		return "", errors.New("failed to generate token")
+		return "", nil, errors.New("failed to generate token")
 	}
 
-	return tokenStr, nil
+	return tokenStr, user, nil
 }
 
 func (s *userService) Logout(ctx context.Context) error {

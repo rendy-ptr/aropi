@@ -43,8 +43,8 @@ const router = createBrowserRouter([
     path: 'dashboard',
     children: [
       {
-        path: 'customer',
-        element: <ProtectedRoute allowedRoles={['CUSTOMER']} />,
+        path: 'member',
+        element: <ProtectedRoute allowedRoles={['MEMBER']} />,
         children: [
           {
             element: <CustomerLayout />,
@@ -62,8 +62,8 @@ const router = createBrowserRouter([
         ],
       },
       {
-        path: 'kasir',
-        element: <ProtectedRoute allowedRoles={['KASIR']} />,
+        path: 'cashier',
+        element: <ProtectedRoute allowedRoles={['CASHIER']} />,
         children: [
           {
             element: <KasirLayout />,

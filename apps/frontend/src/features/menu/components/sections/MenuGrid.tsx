@@ -1,5 +1,5 @@
 import { lucideIcons } from '@/icon/lucide-react-icons';
-const { Search, ShoppingBasket, Flame } = lucideIcons;
+const { Search } = lucideIcons;
 import type { PublicMenu } from '../../types/menu';
 import { resolveImageUrl } from '@/utils/imageBuilder';
 
@@ -30,18 +30,10 @@ const MenuGrid = ({ filteredMenuItems }: MenuGridProps) => {
                 key={item.id}
                 className="group relative overflow-hidden rounded-2xl bg-white shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
               >
-                {/* Popular Badge */}
-                {item.soldCount > 50 && (
-                  <div className="absolute top-3 left-3 z-10 flex items-center gap-1 rounded-full bg-orange-500 px-2 py-1 text-xs font-semibold text-white shadow-sm">
-                    <Flame className="h-3 w-3" />
-                    Popular
-                  </div>
-                )}
-
                 {/* Image Container */}
                 <div className="relative aspect-[4/3] overflow-hidden rounded-t-2xl">
                   <img
-                    src={resolveImageUrl(item.imageUrl, {
+                    src={resolveImageUrl(item.product_image_file, {
                       w: 400,
                       h: 300,
                       q: 80,
@@ -63,40 +55,18 @@ const MenuGrid = ({ filteredMenuItems }: MenuGridProps) => {
                     {item.name}
                   </h3>
 
-                  {/* Price and Stats */}
+                  {/* Price */}
                   <div className="flex items-center justify-between">
                     <span className="text-2xl font-bold text-[#6f4e37]">
-                      Rp {item.sellingPrice.toLocaleString('id-ID')}
+                      Rp {Intl.NumberFormat('id-ID').format(item.price)}
                     </span>
-
-                    <div className="flex items-center gap-1 text-sm text-[#8c7158]">
-                      <ShoppingBasket className="h-4 w-4" />
-                      <span>{item.soldCount}</span>
-                    </div>
                   </div>
 
                   {/* Stock Status */}
                   <div className="flex items-center justify-between pt-2">
-                    <div
-                      className={`flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium ${
-                        item.stock > 0
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-red-100 text-red-700'
-                      }`}
-                    >
-                      <div
-                        className={`h-2 w-2 rounded-full ${
-                          item.stock > 0 ? 'bg-green-500' : 'bg-red-500'
-                        } ${item.stock > 0 ? 'animate-pulse' : ''}`}
-                      ></div>
-                      <span>{item.stock > 0 ? 'Tersedia' : 'Habis'}</span>
-                    </div>
-
-                    {item.stock > 0 && (
-                      <span className="text-sm text-[#8c7158]">
-                        Stok: {item.stock}
-                      </span>
-                    )}
+                    <span className="text-sm text-[#8c7158]">
+                      Stok: {item.stock}
+                    </span>
                   </div>
                 </div>
               </div>

@@ -40,7 +40,7 @@ const LocationSection = () => {
               <p className="text-[#8c7158]">info@aromakopi.com</p>
             </div>
           </div>
-          <div className="relative h-[300px] overflow-hidden rounded-lg">
+          <div className="relative overflow-hidden rounded-lg">
             <Image
               image_url="https://images.unsplash.com/photo-1453614512568-c4024d13c247?q=80&w=800&auto=format&fit=crop"
               alt_text="Coffee shop location"

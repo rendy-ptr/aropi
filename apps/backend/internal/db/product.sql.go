@@ -116,18 +116,43 @@ func (q *Queries) GetProductByName(ctx context.Context, name string) (Product, e
 }
 
 const listProducts = `-- name: ListProducts :many
-SELECT id, product_image_file, name, price, stock, category_id, created_at, updated_at FROM products ORDER BY created_at DESC
+SELECT 
+    p.id, p.product_image_file, p.name, p.price, p.stock, p.category_id, p.created_at, p.updated_at, 
+    c.name as category_name
+FROM products p
+LEFT JOIN categories c ON p.category_id = c.id
+WHERE 
+    ((COALESCE($1::text, '') = '') OR (p.name ILIKE '%' || $1::text || '%'))
+    AND ($2::uuid IS NULL OR p.category_id = $2::uuid)
+ORDER BY p.created_at DESC
 `
 
-func (q *Queries) ListProducts(ctx context.Context) ([]Product, error) {
-	rows, err := q.db.Query(ctx, listProducts)
+type ListProductsParams struct {
+	Search     string
+	CategoryID pgtype.UUID
+}
+
+type ListProductsRow struct {
+	ID               pgtype.UUID
+	ProductImageFile string
+	Name             string
+	Price            int64
+	Stock            int32
+	CategoryID       pgtype.UUID
+	CreatedAt        pgtype.Timestamptz
+	UpdatedAt        pgtype.Timestamptz
+	CategoryName     pgtype.Text
+}
+
+func (q *Queries) ListProducts(ctx context.Context, arg ListProductsParams) ([]ListProductsRow, error) {
+	rows, err := q.db.Query(ctx, listProducts, arg.Search, arg.CategoryID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Product
+	var items []ListProductsRow
 	for rows.Next() {
-		var i Product
+		var i ListProductsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.ProductImageFile,
@@ -137,6 +162,7 @@ func (q *Queries) ListProducts(ctx context.Context) ([]Product, error) {
 			&i.CategoryID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.CategoryName,
 		); err != nil {
 			return nil, err
 		}

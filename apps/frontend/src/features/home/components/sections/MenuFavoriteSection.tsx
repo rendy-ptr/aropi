@@ -1,14 +1,33 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { MENU_FAVORITES, MENU_CATEGORIES } from '@/constants/menuFavorites';
 import { Link } from 'react-router-dom';
 import Image from '../organism/Image';
+import { usePublicCategories } from '@/features/menu/hooks/category.hook';
+import { usePublicMenus } from '@/features/menu/hooks/menu.hook';
+import { resolveImageUrl } from '@/utils/imageBuilder';
+import type { PublicCategory } from '@/features/menu/types/category';
+import type { PublicMenu } from '@/features/menu/types/menu';
+
+import CoffeeLoadingAnimation from '@/components/shared/CoffeeLoadingAnimation';
 
 const MenuFavoriteSection = () => {
-  const [selectedCategory, setSelectedCategory] = useState('kopi');
-  const filteredMenu = MENU_FAVORITES.filter(
-    item => item.categoryId === selectedCategory
-  ).slice(0, 3);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const { data: categories = [] as PublicCategory[] } = usePublicCategories();
+
+  const { data: menuItems = [] as PublicMenu[], isLoading } = usePublicMenus(
+    undefined,
+    selectedCategory
+  );
+
+  // Set default category to the first available one
+  useEffect(() => {
+    if (categories.length > 0 && !selectedCategory) {
+      setSelectedCategory(categories[0].id);
+    }
+  }, [categories, selectedCategory]);
+
+  const displayedMenu = menuItems.slice(0, 3);
+
   return (
     <section id="menu" className="bg-[#f8f3e9] py-16">
       <div className="mx-auto max-w-7xl px-4 md:px-6">
@@ -27,7 +46,7 @@ const MenuFavoriteSection = () => {
 
         {/* Kategori menu */}
         <div className="mt-8 mb-12 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 md:gap-4 lg:flex lg:flex-wrap lg:justify-center lg:gap-4">
-          {MENU_CATEGORIES.map(category => (
+          {categories.map(category => (
             <Button
               key={category.id}
               variant={selectedCategory === category.id ? 'default' : 'outline'}
@@ -38,49 +57,60 @@ const MenuFavoriteSection = () => {
               } `}
               onClick={() => setSelectedCategory(category.id)}
             >
-              {category.label}
+              {category.name}
             </Button>
           ))}
         </div>
 
         {/* Kartu menu */}
-        <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {filteredMenu.map((item, index) => (
-            <div
-              key={index}
-              className="group relative overflow-hidden rounded-lg border border-[#e6d9c9] bg-white shadow-sm transition-all hover:shadow-md"
-            >
-              <div className="aspect-square overflow-hidden">
-                <Image
-                  image_url={item.image || '/placeholder.svg'}
-                  alt_text={item.name}
-                  width={400}
-                  height={400}
-                  class_name="h-full w-full object-cover transition-transform group-hover:scale-105"
-                />
-              </div>
-              <div className="p-6">
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="rounded-full bg-[#f8f3e9] px-2 py-1 text-xs font-medium text-[#a67c52]">
-                    {item.category}
-                  </span>
+        {isLoading ? (
+          <CoffeeLoadingAnimation
+            fullScreen={false}
+            title="Mencari Menu"
+            messages={['Melihat stok', 'Mempersiapkan rasa', 'Tunggu sebentar']}
+          />
+        ) : (
+          <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {displayedMenu.map(item => (
+              <div
+                key={item.id}
+                className="group relative overflow-hidden rounded-lg border border-[#e6d9c9] bg-white shadow-sm transition-all hover:shadow-md"
+              >
+                <div className="aspect-square overflow-hidden">
+                  <Image
+                    image_url={resolveImageUrl(item.product_image_file, {
+                      w: 400,
+                      h: 400,
+                      q: 80,
+                    })}
+                    alt_text={item.name}
+                    width={400}
+                    height={400}
+                    class_name="h-full w-full object-cover transition-transform group-hover:scale-105"
+                  />
                 </div>
-                <h3 className="text-xl font-bold text-[#6f4e37]">
-                  {item.name}
-                </h3>
-                <p className="mt-2 text-[#8c7158]">{item.description}</p>
-                <div className="mt-4 flex items-center justify-between">
-                  <span className="text-lg font-bold text-[#6f4e37]">
-                    {item.price}
-                  </span>
-                  <span className="rounded-full bg-[#f8f3e9] px-3 py-1 text-sm text-[#8c7158]">
-                    Tersedia di kedai
-                  </span>
+                <div className="p-6">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="rounded-full bg-[#f8f3e9] px-2 py-1 text-xs font-medium text-[#a67c52]">
+                      {item.category.name}
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-bold text-[#6f4e37]">
+                    {item.name}
+                  </h3>
+                  <div className="mt-4 flex items-center justify-between">
+                    <span className="text-lg font-bold text-[#6f4e37]">
+                      Rp {Intl.NumberFormat('id-ID').format(item.price)}
+                    </span>
+                    <span className="rounded-full bg-[#f8f3e9] px-3 py-1 text-sm text-[#8c7158]">
+                      {item.stock > 0 ? 'Tersedia' : 'Habis'}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* Tombol aksi */}
         <div className="mt-12 text-center">

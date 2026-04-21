@@ -20,7 +20,10 @@ func NewProductHandler(s domain.ProductService) *ProductHandler {
 }
 
 func (h *ProductHandler) GetAll(c fiber.Ctx) error {
-	products, err := h.service.GetAll(c.Context())
+	search := c.Query("search")
+	categoryID := c.Query("category_id")
+
+	products, err := h.service.GetAll(c.Context(), search, categoryID)
 	if err != nil {
 		return c.Status(500).JSON(dto.Response{
 			Success: false,
@@ -118,7 +121,9 @@ func (h *ProductHandler) Create(c fiber.Ctx) error {
 		Name:             bodyRequest.Name,
 		Price:            bodyRequest.Price,
 		Stock:            bodyRequest.Stock,
-		CategoryID:       bodyRequest.CategoryID,
+		Category: domain.Category{
+			ID: bodyRequest.CategoryID,
+		},
 	})
 	if err != nil {
 		return c.Status(422).JSON(dto.Response{
@@ -194,7 +199,9 @@ func (h *ProductHandler) Update(c fiber.Ctx) error {
 		Name:             bodyRequest.Name,
 		Price:            bodyRequest.Price,
 		Stock:            bodyRequest.Stock,
-		CategoryID:       bodyRequest.CategoryID,
+		Category: domain.Category{
+			ID: bodyRequest.CategoryID,
+		},
 	}, c.Params("id"))
 	if err != nil {
 		return c.Status(422).JSON(dto.Response{

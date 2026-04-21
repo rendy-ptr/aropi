@@ -41,7 +41,7 @@ func (h *UserHandler) Login(c fiber.Ctx) error {
 		})
 	}
 
-	token, err := h.service.Login(c.Context(), domain.User{
+	token, user, err := h.service.Login(c.Context(), domain.User{
 		Email:    bodyRequest.Email,
 		Password: bodyRequest.Password,
 	})
@@ -59,12 +59,15 @@ func (h *UserHandler) Login(c fiber.Ctx) error {
 		HTTPOnly: true,
 		Secure:   false,
 		SameSite: "Lax",
+		Path:     "/",
 	})
 
 	return c.Status(200).JSON(dto.Response{
 		Success: true,
 		Message: "Login success",
-		Data:    nil,
+		Data: fiber.Map{
+			"role": user.Role,
+		},
 	})
 }
 
@@ -108,6 +111,18 @@ func (h *UserHandler) Register(c fiber.Ctx) error {
 		Success: true,
 		Message: "Register success",
 		Data:    user,
+	})
+}
+
+func (h *UserHandler) Me(c fiber.Ctx) error {
+	return c.Status(200).JSON(dto.Response{
+		Success: true,
+		Message: "Get user data success",
+		Data: fiber.Map{
+			"id":    c.Locals("userID"),
+			"email": c.Locals("email"),
+			"role":  c.Locals("role"),
+		},
 	})
 }
 

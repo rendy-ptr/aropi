@@ -15,8 +15,8 @@ func NewProductService(repo domain.ProductRepository) domain.ProductService {
 	return &productService{repo: repo}
 }
 
-func (s *productService) GetAll(ctx context.Context) ([]domain.Product, error) {
-	return s.repo.FindAll(ctx)
+func (s *productService) GetAll(ctx context.Context, search string, categoryID string) ([]domain.Product, error) {
+	return s.repo.FindAll(ctx, search, categoryID)
 }
 
 func (s *productService) GetByID(ctx context.Context, id string) (*domain.Product, error) {

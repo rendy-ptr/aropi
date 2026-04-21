@@ -5,7 +5,7 @@ import { API_PATHS } from '@/constants/apiPaths';
 
 export const getPublicCategories = async (): Promise<PublicCategory[]> => {
   const { data } = await apiClient.get<ApiResponse<PublicCategory[]>>(
-    API_PATHS.PUBLIC.KATEGORI()
+    API_PATHS.PUBLIC.CATEGORIES()
   );
   return data.data;
 };

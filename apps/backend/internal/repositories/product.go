@@ -17,8 +17,21 @@ func NewProductRepository(q *db.Queries) domain.ProductRepository {
 	return &productRepository{queries: q}
 }
 
-func (r *productRepository) FindAll(ctx context.Context) ([]domain.Product, error) {
-	rows, err := r.queries.ListProducts(ctx)
+func (r *productRepository) FindAll(ctx context.Context, search string, categoryID string) ([]domain.Product, error) {
+	var categoryUUID pgtype.UUID
+	if categoryID != "" && categoryID != "semua" {
+		if err := categoryUUID.Scan(categoryID); err != nil {
+			slog.Error("productRepository.FindAll: invalid category uuid", "category_id", categoryID, "error", err)
+			return nil, err
+		}
+	}
+
+	params := db.ListProductsParams{
+		Search:     search,
+		CategoryID: categoryUUID,
+	}
+
+	rows, err := r.queries.ListProducts(ctx, params)
 	if err != nil {
 		slog.Error("productRepository.FindAll", "error", err)
 		return nil, err
@@ -31,7 +44,10 @@ func (r *productRepository) FindAll(ctx context.Context) ([]domain.Product, erro
 			Name:             row.Name,
 			Price:            row.Price,
 			Stock:            int(row.Stock),
-			CategoryID:       row.CategoryID.String(),
+			Category: domain.Category{
+				ID:   row.CategoryID.String(),
+				Name: row.CategoryName.String,
+			},
 		})
 	}
 	return products, nil
@@ -56,15 +72,17 @@ func (r *productRepository) FindByID(ctx context.Context, id string) (*domain.Pr
 		Name:             row.Name,
 		Price:            row.Price,
 		Stock:            int(row.Stock),
-		CategoryID:       row.CategoryID.String(),
+		Category: domain.Category{
+			ID: row.CategoryID.String(),
+		},
 	}, nil
 }
 
 func (r *productRepository) Create(ctx context.Context, p domain.Product) (*domain.Product, error) {
 	var uuid pgtype.UUID
-	err := uuid.Scan(p.CategoryID)
+	err := uuid.Scan(p.Category.ID)
 	if err != nil {
-		slog.Error("productRepository.Create: invalid uuid", "id", p.CategoryID, "error", err)
+		slog.Error("productRepository.Create: invalid uuid", "id", p.Category.ID, "error", err)
 		return nil, err
 	}
 	params := db.CreateProductParams{
@@ -85,7 +103,9 @@ func (r *productRepository) Create(ctx context.Context, p domain.Product) (*doma
 		Name:             row.Name,
 		Price:            row.Price,
 		Stock:            int(row.Stock),
-		CategoryID:       row.CategoryID.String(),
+		Category: domain.Category{
+			ID: row.CategoryID.String(),
+		},
 	}, nil
 }
 
@@ -97,8 +117,8 @@ func (r *productRepository) Update(ctx context.Context, p domain.Product, id str
 	}
 
 	var categoryUUID pgtype.UUID
-	if err := categoryUUID.Scan(p.CategoryID); err != nil {
-		slog.Error("productRepository.Update: invalid category uuid", "category_id", p.CategoryID, "error", err)
+	if err := categoryUUID.Scan(p.Category.ID); err != nil {
+		slog.Error("productRepository.Update: invalid category uuid", "category_id", p.Category.ID, "error", err)
 		return nil, err
 	}
 
@@ -121,7 +141,9 @@ func (r *productRepository) Update(ctx context.Context, p domain.Product, id str
 		Name:             row.Name,
 		Price:            row.Price,
 		Stock:            int(row.Stock),
-		CategoryID:       row.CategoryID.String(),
+		Category: domain.Category{
+			ID: row.CategoryID.String(),
+		},
 	}, nil
 }
 

@@ -6,7 +6,7 @@ export interface AuthMeResponse {
   data: {
     id: string;
     email: string;
-    role: 'CUSTOMER' | 'KASIR' | 'ADMIN';
+    role: 'MEMBER' | 'CASHIER' | 'ADMIN';
   };
 }
 
@@ -19,10 +19,7 @@ export interface LoginResponse {
   success: boolean;
   message: string;
   data: {
-    id: string;
-    name: string;
     role: string;
-    redirectUrl: string;
   };
 }
 

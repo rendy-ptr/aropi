@@ -1,12 +1,11 @@
 export interface PublicMenu {
   id: string;
+  product_image_file: string;
   name: string;
-  soldCount: number;
-  categoryId: string;
-  imageUrl: string;
-  sellingPrice: number;
+  price: number;
   stock: number;
   category: {
+    id: string;
     name: string;
   };
 }

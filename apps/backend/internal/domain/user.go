@@ -18,7 +18,7 @@ type UserRepository interface {
 }
 
 type UserService interface {
-	Login(ctx context.Context, u User) (token string, err error)
+	Login(ctx context.Context, u User) (token string, user *User, err error)
 	Register(ctx context.Context, u User) (*User, error)
 	Logout(ctx context.Context) error
 }

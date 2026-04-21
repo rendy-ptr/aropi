@@ -37,7 +37,7 @@ func (r *userRepository) Register(ctx context.Context, u domain.User) (*domain.U
 		Name:     u.Name,
 		Email:    u.Email,
 		Password: u.Password,
-		Role:     db.UserRoleUser,
+		Role:     db.UserRoleMEMBER,
 	}
 	row, err := r.queries.CreateUser(ctx, params)
 	if err != nil {

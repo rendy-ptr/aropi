@@ -3,7 +3,7 @@ import { lucideIcons } from '@/icon/lucide-react-icons';
 
 // HOOKS
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useToast } from '@/components/shared/ToastProvider';
 import { useQueryClient } from '@tanstack/react-query';
@@ -40,6 +40,14 @@ const FormLogin = () => {
   const { addToast } = useToast();
   const queryClient = useQueryClient();
   const { setLoggingOut } = useAuthStore();
+  const [searchParams] = useSearchParams();
+  const callbackUrl = searchParams.get('callback');
+
+  const roleRedirectMap: Record<string, string> = {
+    ADMIN: '/dashboard/admin',
+    CASHIER: '/dashboard/cashier',
+    MEMBER: '/dashboard/member',
+  };
 
   useEffect(() => {
     setLoggingOut(false);
@@ -49,11 +57,12 @@ const FormLogin = () => {
     setIsSubmitting(true);
     try {
       const response = await login(data);
-      console.log('API Response:', response.data);
       if (response.success) {
         addToast(response.message, 'success', 5000);
         await queryClient.invalidateQueries({ queryKey: ['auth'] });
-        navigate(response.data.redirectUrl, { replace: true });
+        const targetPath =
+          callbackUrl || roleRedirectMap[response.data.role] || '/';
+        navigate(targetPath, { replace: true });
       }
     } catch (error) {
       let errorMsg = 'An unexpected error occurred';

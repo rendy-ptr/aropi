@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import CoffeeLoadingAnimation from './CoffeeLoadingAnimation';
 
 interface ProtectedRouteProps {
-  allowedRoles: Array<'CUSTOMER' | 'KASIR' | 'ADMIN'>;
+  allowedRoles: Array<'MEMBER' | 'CASHIER' | 'ADMIN'>;
 }
 
 export function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
